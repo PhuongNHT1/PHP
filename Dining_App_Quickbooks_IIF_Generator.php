@@ -112,7 +112,8 @@ if($_POST['submit']) {
 
 /*Open the file in writable 'text' mode so that windows will append the necessary carriage-return characters onto the line-feed characters you send.
 Once file is open, add Quickbooks header with the $qbheader variable. This is needed in order for a successfull IIF file import into QB.
-*/Because we are using the 'w' in fopen(filepath,w), the existing file in the monthlyscans dir will be overwritten with the below. 
+Because we are using the 'w' in fopen(filepath,w), the existing file in the monthlyscans dir will be overwritten with the below. 
+*/
 $file = fopen("../scans/monthlyscans/" .date("m-d-y")."QBDoctorMealScans.iif",'wt');
 $qbheader = "!TRNS\tTRNSTYPE\tDATE\tACCNT\tNAME\tAMOUNT\tTOPRINT\tNAMEIS TAXABLE\tADDR1\r
 !SPL\tTRNSTYPE\tDATE\tACCNT\tNAME\tAMOUNT\tPRICE\tINVITEM\r
