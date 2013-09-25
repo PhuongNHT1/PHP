@@ -7,7 +7,7 @@ $sendername = $_POST['sendername'];
 $senderemail = $_POST['senderemail'];
 $message = $_POST["message"];
 
-//Setup filename for Output() in line 38
+//Setup filename for Output() in line 39
 $file = "congratulations.pdf";
 
 //Call fpdf.php class
