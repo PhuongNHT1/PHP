@@ -1,0 +1,15 @@
+$firstname = $_GET['fname'];
+$lastname = $_GET['lname'];
+ 
+if ($stmt = $mysqli->prepare("INSERT INTO some_table (firstname, lastname) VALUES (?, ?)")) {
+ 
+    // Bind the variables to the parameter as strings. 
+    $stmt->bind_param("ss", $firstname, $lastname);
+ 
+    // Execute the statement.
+    $stmt->execute();
+ 
+    // Close the prepared statement.
+    $stmt->close();
+ 
+}
