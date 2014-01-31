@@ -1,0 +1,343 @@
+<?php require("connecti.inc.php"); ?>
+
+<html>
+<head>
+<meta name="robots" content="noindex, nofollow">
+<title>eVoice Send Results Script</title>
+<style type="text/css">
+
+#header {
+	position: absolute;
+	top: 1px;
+	left: 1px;
+	height: 70px;
+	width: 700px;
+	border: 1px dashed #333;
+}
+
+#body_header {
+    position: absolute;
+	top: 114px;
+	left: 1px;
+	width: 704px;
+	padding: 5px;
+	border: 1px dashed #333;
+	font-family: arial;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#body_content {
+    font-family: arial;
+    font-size: 12px;
+}
+
+#results_area {
+    position: absolute;
+	top: 2px;
+	left: 1px;
+	width: 704px;
+	padding: 5px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+}
+
+.ascensionlogo {
+	font-family: "Times New Roman", Times, serif;
+	font-size: 12px;
+	font-style: italic;
+	font-weight: bold;
+}
+
+p.MsoNormal {
+	mso-style-unhide:no;
+	mso-style-qformat:yes;
+	mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";
+	mso-fareast-font-family:"Times New Roman";
+}
+
+.ascensionlogo1 {
+	text-align: center;
+	font-family: "Times New Roman", Times, serif;
+	font-size: 12px;
+	font-style: italic;
+	font-weight: bold;
+}
+
+.evoicefont {	
+    text-align: center;
+	font-family: "Times New Roman", Times, serif;
+	font-size: 14px;
+	font-style: italic;
+	font-weight: bold;
+}
+
+p.MsoNormal1 {
+	mso-style-unhide:no;
+	mso-style-qformat:yes;
+	mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";
+	mso-fareast-font-family:"Times New Roman";
+}
+
+</style>
+</head>
+<body>
+
+<?php
+
+//Format message for receiver. *This email will be to whatever department was choosen in Department dropdown.
+//$depart = $_POST['department'];
+$evoicename = "Test Leader";
+$evoicedept = "Test COO";
+$evoiceemail = "Test_evoice@someemail.com";
+$topicname = $_POST['topic'];
+$anonymous = $_POST['anonymous'];
+$sender_name = $_POST['sender_name'];
+$datestamp = date("m/d/Y");
+$sender_email = $_POST['sender_email'];
+$sender_location = $_POST['sender_location'];
+$to = "me@here.com";
+$message = $_POST['message'];
+$message = wordwrap($message,90,"<br />",true);
+$message = str_replace('\r\n',' ',$message);
+$body = "
+<html>
+<head>
+<style>
+#body_header 
+{
+font-family: arial;
+font-size: 12px;
+font-weight: bold;
+padding: 5px;
+}
+#body_content
+{
+font-family: arial;
+font-size: 12px;
+padding: 5px;
+}
+</style>
+</head>
+<body>
+<p id=body_header><b><u>eVoice Message Data:</u></b>
+<br />
+<font color=red>*If anonymous is Yes, Sender Name, Sender Email, and Sender Location data will be blank</font>
+</p>
+<p id=body_content><b>Anonymous:</b> $anonymous</p>
+<p id=body_content><b>Sender Name:</b> $sender_name</p>
+<p id=body_content><b>Sender Email:</b> <a href=mailto:$sender_email>$sender_email</a></p>
+<p id=body_content><b>Sender Location:</b> $sender_location</p>
+<p id=body_content><b>Topic Name Chosen:</b> $topicname</p>
+<hr />
+<p id=body_header><u>eVoice Message</u>:</p>
+<p id=body_header>Hello,</p>
+<p id=body_content>$message</p>
+<p id=body_header>Thank You for your time and assistance,<br />
+$sender_name
+</p>
+<br />
+</p>
+</body>
+</html>
+";
+
+//Force PHP to use this SMTP server address and email account -- (optional)
+ini_set("SMTP","some mail server IP");	
+
+//This email address will show in the From field of the message. 
+//ini_set("sendmail_from","me@here.com"); 
+
+//Setup mail parameters for HTML formatted email from $body variable
+$subject = "New eVoice Message";
+$headers  = "MIME-Version: 1.0"."\r\n";
+$headers .= "Content-type:text/html;charset=iso-8859-1"."\r\n";
+
+echo "<div id=results_area>";
+
+//
+if(($anonymous == 'Yes') && isset($topicname) && isset($message))
+{
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connection failed: %s\n", mysqli_connect_error());
+    exit();
+} 
+
+/* create a prepared statement */
+if ($stmt = mysqli_prepare($link, "INSERT INTO some_table (evoicename,evoicedept,evoiceemail,topic,anonymous,senddate,comment) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+
+/* bind parameters for markers */
+mysqli_stmt_bind_param($stmt, 'sssssss', $evoicename,$evoicedept,$evoiceemail,$topicname,$anonymous,$datestamp,$message);
+ 
+/* execute query */
+mysqli_stmt_execute($stmt);
+
+/* close statement */
+mysqli_stmt_close($stmt);
+
+/* close the database connection*/
+mysqli_close($link);
+
+}
+
+
+	 //Send the message
+	 mail($to,$subject,$body,$headers);
+	
+	echo "
+    <div id=header>
+    <table width=702 border=0 align=center cellpadding=0 cellspacing=0>
+    <tr>
+    <td valign=top align=center>
+    <img src=Logo.png width=250 height=66 alt=STVHS />
+    </td>
+    <td class=evoicefont><p class=MsoNormal1><span class=SpellE><b style=mso-bidi-font-weight:normal>
+    <i style=mso-bidi-font-style:normal><span style=font-size:36.0pt>eVoice</span></i></b></span>
+    <b style=mso-bidi-font-weight:normal><i style=mso-bidi-font-style:normal>
+    <span style=font-size:36.0pt>
+    <o:p></o:p>
+    </span></i></b></p>
+    <p class=MsoNormal1><b style=mso-bidi-font-weight:normal><i
+    style=mso-bidi-font-style:normal><span style=font-size:14.0pt>Sharing the Strength of our Ministry<o:p></o:p>
+    </span></i></b></p>
+    <br />
+    <br />
+    </td>
+    </tr>
+    </table>
+    </div>
+	<div id=body_header>
+	<br /><br />Thank you, your anonymous email was sent on ".date("F j, Y")." @ ".date("g:i a")." with the following information:<br /><br />
+	";
+	//echo "<b><u>Department Name:</u></b><br />"; if(isset($_POST['department'])){$dn=$_POST['department']; echo "\t" .$dn."\t<br />";}
+	//If they want multiple department selection: Add to line 143>foreach($dn as $deptname)
+	//echo "<br />";
+	echo "<b><u>Topic:</u></b><br />"; if(isset($_POST['topic'])){$topicname=$_POST['topic'];echo "\t" .$topicname."\t<br />";}
+	echo "<br />";
+	echo "<b><u>Message:</u></b><br />";if(isset($_POST['message'])){$message=$_POST['message'];echo $message;}
+	echo "
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<hr />
+	<p align=center>
+	<p align=center><input type=button value='Close This Window' onclick=window.close();>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type=button value='Print This Page' onclick=javascript:window.print();>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<!--<input type=button value='Close Window' onclick='window.close();'>-->
+	</p>
+	<hr />
+	<br />
+	<br />
+	</div>";
+
+} 
+
+//
+elseif(($anonymous == 'No') && isset($sender_name) && isset($sender_email) && isset($sender_location) && isset($topicname) && isset($message))
+{
+    	
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connection failed: %s\n", mysqli_connect_error());
+    exit();
+} 
+
+/* create a prepared statement */
+if ($stmt = mysqli_prepare($link, "INSERT INTO some_table (evoicename,evoicedept,evoiceemail,topic,anonymous,sendername,senddate,senderemail,senderlocation,comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+
+/* bind parameters for markers */
+mysqli_stmt_bind_param($stmt, 'ssssssssss', $evoicename,$evoicedept,$evoiceemail,$topicname,$anonymous,$sender_name,$datestamp,$sender_email,$sender_location,$message);
+ 
+ /* execute query */
+mysqli_stmt_execute($stmt);
+
+/* close statement */
+mysqli_stmt_close($stmt);
+
+/* close the database connection*/
+mysqli_close($link);
+
+}
+
+
+	//Send the message
+	mail($to,$subject,$body,$headers);
+	
+   echo "
+   <div id=header>
+   <table width=702 border=0 align=center cellpadding=0 cellspacing=0>
+   <tr>
+   <td valign=top align=center>
+   <img src=Logo.png width=250 height=66 alt=STVHS />
+   </td>
+   <td class=evoicefont><p class=MsoNormal1><span class=SpellE><b style=mso-bidi-font-weight:normal>
+   <i style=mso-bidi-font-style:normal><span style=font-size:36.0pt>eVoice</span></i></b></span>
+   <b style=mso-bidi-font-weight:normal><i style=mso-bidi-font-style:normal>
+   <span style=font-size:36.0pt>
+   <o:p></o:p>
+   </span></i></b></p>
+   <p class=MsoNormal1><b style=mso-bidi-font-weight:normal><i
+   style=mso-bidi-font-style:normal><span style=font-size:14.0pt>Sharing the Strength of our Ministry<o:p></o:p>
+   </span></i></b></p>
+   <br />
+   <br />
+   </td>
+   </tr>
+   </table>
+   </div>
+   <div id=body_header>
+	<br /><br />Thank you <font color=red>$sender_name</font>, your email was sent on ".date("F j, Y")." @ ".date("g:i a")." with the following information:
+	<br /><br />";
+	echo "<b><u>Email:</u></b><br />"; if(isset($_POST['sender_email'])){$sender_email=$_POST['sender_email'];echo "\t" .$sender_email."\t<br /><br />";}
+echo "<b><u>Location:</u></b><br />"; if(isset($_POST['sender_location'])){$sender_location=$_POST['sender_location'];echo "\t" .$sender_location."\t<br /><br />";  }
+	echo "<b><u>Topic:</u></b><br />"; if(isset($_POST['topic'])){$topicname=$_POST['topic'];echo "\t" .$topicname."\t<br />";}
+	echo "<br />";
+	echo "<b><u>Message:</u></b><br />";if(isset($message)){echo $message;}
+	echo "
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<hr />
+	<p align=center><input type=button value='Close This Window' onclick=window.close();>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type=button value='Print This Page' onclick=javascript:window.print();>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<!--<input type=button value='Close Window' onclick='window.close();'>-->
+	</p>
+	<hr />
+	<br />
+	<br />
+	</div>
+	";
+	
+}	
+
+else
+{
+    echo "There was an error sending your message!<br /><input type=button value='Please try again' onclick=javascript:history.go(-1);";
+}
+    echo "</div>";
+   
+ ?>
+ 
+<br /><br /><br />
+
+</body>
+</html>
