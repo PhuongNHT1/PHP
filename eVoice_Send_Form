@@ -95,7 +95,7 @@ p.MsoNormal1 {
 
 <?php
 
-//Format message for receiver. *This email will be to whatever department was choosen in Department dropdown.
+//Format message for receiver. *This email will be to chosen Leader selected on eVoice landing page.
 //$depart = $_POST['department'];
 $evoicename = "Test Leader";
 $evoicedept = "Test COO";
