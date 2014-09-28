@@ -7,7 +7,10 @@
 <link rel="stylesheet" href="css/main.css" type="text/css" />
 <script language="javascript" type="text/javascript" src="js/fieldvalidation.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+<!--[if IE]>
+<script src="http://html5shiv.google.com/svn/trunk/html5.js"></script>
+<![end if]-->
+</head>
 
 <body>
 <h1>Lovenox (enoxaparin)/Epidural Catheter Protocol</h1>
