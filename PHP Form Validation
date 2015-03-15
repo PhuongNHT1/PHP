@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0'  />
+<link href='http://fonts.googleapis.com/css?family=Slabo+27px' rel='stylesheet' type='text/css'>
+<style type='text/css'>
+#form {
+font-family: 'Slabo 27px', serif;
+}
+#form_results {
+width: auto;
+padding: 5px;
+border: 2px inset;
+font-family: 'Slabo 14px', serif;
+}
+.error {
+font-family: 'Slabo 14px', serif;
+color: red;
+}
+</style>
+</head>
+
+<body>
+<?php
+
+//Define variables and set to empty values.
+$nameerr = $emailerr = $websiteerr = $commenterr = "";
+$name = $email = $website = $comment = "";
+
+if($_SERVER['REQUEST_METHOD'] == 'POST') {
+	
+	//First test for empty fields and then validate them.
+	if(empty($_POST['name'])) {
+		$nameerr = 'Name is required!';
+	} else {
+		$name = test_input($_POST['name']);
+	//Check to make sure user only enters upper/lower case alpha chars and spaces. 
+		if(!preg_match('/^[a-zA-Z ]*$/',$name)) {
+        $nameerr = "Only letters and white spaces are allowed!"; 
+	    } 
+	  }
+	
+	if(empty($_POST['email'])) {
+		$emailerr = 'Email is required!';
+	} else {
+		$email = test_input($_POST['email']);
+		//Validate email address.
+		if(!filter_var($email,FILTER_VALIDATE_EMAIL)) {
+	    $emailerr = 'Please enter a valid email!';	
+	    }
+	  }  
+	
+	if(empty($_POST['website'])) {
+		$website = '';
+	} else {
+		$website = test_input($_POST['website']);
+		if(!preg_match("/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/", $website)) {
+		$websiteerr = 'Please enter a valid URL. For example: http://google.com, https://google.com, or google.com';	
+		}
+	  }
+		
+	if(empty($_POST['comment'])) {
+		$comment = '';
+	} else {
+		$comment = test_input($_POST['comment']);
+		if(!preg_match('/^[A-z0-9\.\'\!\-\? ]*$/',$comment)) {
+		$commenterr = 'Only alphanumeric(A-z0-9), spaces, periods(.), exclamation points(!), dashes(-), and apostrophes(\') are allowed!';	
+		}
+	  }
+}
+
+//Create test_input() function to validate data.
+function test_input($data) {
+	$data = trim($data);
+	$data = stripslashes($data);
+	$data = htmlspecialchars($data);
+	return $data;	
+}
+
+?>
+
+<!--
+Field	 Validation Rules
+Name	 Required. + Must only contain letters and whitespace
+E-mail	 Required. + Must contain a valid email address (with @ and .)
+Website	 Optional. If present, it must contain a valid URL
+Comment	 Optional. Multi-line input field (textarea)
+-->
+
+<h2>PHP Form Validation</h2>
+<p><span class="error">*Indicates required field.</span></p>
+
+<form id="form" method="POST" action="<?php htmlspecialchars($_SERVER['PHP_SELF']);?>" name="contact_form">
+<span class="error">*</span>Name: 
+<br />
+<input type="text" name="name" value='<?php echo $name; ?>' />
+<span class='error'><?php echo $nameerr; ?></span>
+<br />
+<br />
+<span class="error">*</span>E-mail:
+<br />
+<input type="text" name="email" value='<?php echo $email; ?>' />
+<span class='error'><?php echo $emailerr; ?></span>
+<br />
+<br />
+Website: 
+<br />
+<input type="text" name="website" value='<?php echo $website; ?>' />
+<span class='error'><?php echo $websiteerr; ?></span>
+<br />
+<br />
+Comment: 
+<br />
+<textarea name="comment" rows="5" cols="40"><?php echo $comment; ?></textarea>
+<br />
+<span class="error"><?php echo $commenterr; ?></span>
+<br />
+<input type='submit' name='Submit' value='submit' />
+</form>
+<br />
+
+<?php
+//Display the user's form data on the page if they have filled in their name and email. 
+if(!empty($name) && !empty($email)) {
+echo '<div id="form_results">';	
+echo '<h3>Your Form Input</h3>';
+echo '<b>Name: </b>'.$name.'<br /><br />';
+echo '<b>E-mail: </b>'.$email.'<br /><br />';
+echo '<b>Website: </b>'.$website.'<br /><br />';
+echo '<b>Comment: </b>'.$comment.'<br/><br />';
+echo '<b>Your form was submitted at: </b>'.date('H:i:s');
+echo '</div>';
+}
+?>
+
+</body>
+</html>
