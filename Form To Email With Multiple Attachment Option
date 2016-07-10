@@ -1,0 +1,121 @@
+<?php
+
+if(isset($_POST['submit'])) {
+	    
+		if ($_POST['fname'] != "") {
+            $_POST['fname'] = filter_var($_POST['fname'], FILTER_SANITIZE_STRING);
+            }  if ($_POST['fname'] == "") {
+                $errors .= '> The First Name field is required.<br/>';
+            }
+		
+		if ($_POST['lname'] != "") {
+            $_POST['lname'] = filter_var($_POST['lname'], FILTER_SANITIZE_STRING);
+            }   if ($_POST['lname'] == "") {
+                $errors .= '> The Last Name field is required.<br/>';
+            }
+				
+	   if ($_POST['email'] != "") {
+            $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors .= " > $email is <strong>NOT</strong> a valid email address.<br/>";
+            }
+        } if($_POST['email'] == "") {
+			$errors .= " > The Email field is required.<br />";
+		}
+		
+		 if ($_POST['phone'] != "") {
+            $_POST['phone'] = filter_var($_POST['phone'], FILTER_SANITIZE_NUMBER_INT);
+            if ($_POST['phone'] == "") {
+                $errors .= ' > Please enter a valid phone number format. (i.e. 000-000-0000)<br/>';
+            }
+        } 
+	   
+	    if ($_POST['experience'] != "") {
+            $_POST['experience'] = filter_var($_POST['experience'], FILTER_VALIDATE_INT);
+           } if ($_POST['experience'] == "") {
+             $errors .= ' > The Years of Experience field is required.<br/>';
+            }  
+		
+		if($_POST['locationofinterest'] == 'Select One') {
+			$errors .= ' > Please select your location of interest.<br />';
+		}
+	
+	//<Begin file upload process>
+		//Did files get sent
+	if(isset($_FILES) && (bool) $_FILES) {
+		//Define allowed extentions
+		$allowedExtensions = array("pdf","doc","docx","odt","");
+		$files = array();
+		//Loop through the files
+		foreach($_FILES as $name=>$file) {
+			//Define some file variables
+			$file_name = $file['name'];
+			$temp_name = $file['tmp_name'];
+			$file_size = $file['size'];
+			//Check if file type is allowed
+			$path_parts = pathinfo($file_name);
+			$ext = $path_parts['extension'];
+			if(!in_array($ext,$allowedExtensions)) {
+			   $errors .= " > Only resumes with <b>.pdf .doc .docx .odt</b> file extensions are allowed.";
+			  }  else {
+				$errors .= "";
+			  }
+			//Move file to the server -- REQUIRED!!!
+			$server_file = "define your server path here";
+			if(!in_array($ext,$allowedExtensions)) {
+			  unlink($server_file);
+			} else {				
+			move_uploaded_file($temp_name,$server_file);
+			//Add file to the array of files
+			array_push($files,$server_file);
+			}			
+		 }
+		  //Define mail variables. Uses default SMTP Host in php.ini
+		  $to = "email address here";
+		  $from = $email;
+		  $subject = "Subject Line here";
+		  $msg = "Define and layout your message here.";
+		  $headers = "From: $from";
+		  
+		  //Define our boundary
+		  $semi_rand = md5(time());
+		  $mime_boundary = "==Multipart_Boundary_x{$semi_rand}x";
+		  
+		  //Tell the header about the boundary
+		  $headers .= "\nMIME-Version: 1.0\n";
+		  $headers .= "Content-Type: multipart/mixed;\n";
+		  $headers .= " boundary=\"{$mime_boundary}\"";
+		  
+		  //Define HTML Email
+		  $message = "\n\n--{$mime_boundary}\n";
+		  $message .= "Content-Type: text/html; charset=\"iso-8859-1\"\n";
+		  $message .= "Content-Transfer-Encoding: 7bit\n\n" . $msg . "\n\n";
+		  $message .= "--{$mime_boundary}\n";
+		  
+		  //Loop through the files and define attachments
+		  foreach($files as $file) {
+			  $aFile = fopen($file, "rb");
+			  $data = fread($aFile,filesize($file));
+			  fclose($aFile);
+			  $data = chunk_split(base64_encode($data));
+			  $message .= "Content-Type: {\"application/octet-stream\"};\n";
+			  $message .= " name=\"$file\"\n";
+			  $message .= "Content-Disposition: attachment;\n";
+			  $message .= " filename=\"$file\"\n";
+			  $message .= "Content-Transfer-Encoding: base64\n\n" . $data . "\n\n";
+			  $message .= "--{$mime_boundary}\n";
+		  }
+	 }
+		
+	if (!$errors) {
+      //Send the mail	   
+	  $sendMail = @mail($to, $subject, $message, $headers);
+	  //Once mail has been sent successfully, redirect user to confirmation page.
+	  echo "<script type='text/javascript'>window.location.href = 'confirmed.php';</script>";
+	  echo "<br /><br />";
+      } else {
+        echo '<div style="color: red">' .$errors. '<br/></div>';
+        }
+}
+
+?>
